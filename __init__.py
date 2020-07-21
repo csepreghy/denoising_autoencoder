@@ -1,5 +1,3 @@
-from PIL import Image, ImageFile
-from matplotlib.pyplot import imshow
 from tensorflow.keras.optimizers import SGD
 import requests
 from io import BytesIO
@@ -9,31 +7,50 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation
 from tensorflow.keras.callbacks import EarlyStopping
 
-url = "https://i.insider.com/5df126b679d7570ad2044f3e?width=1100&format=jpeg&auto=webp"
+import os
+import cv2
+import matplotlib.pyplot as plt
+
+
+datapath = os.path.join(os.getcwd(), 'cats')
+
+for img in os.listdir(datapath):
+    print(f'img = {img}')
+
+    img_array = cv2.imread(os.path.join(datapath, img))
+    print(f'img_array = {img_array}')
+    cv2.imshow('cat', img_array) 
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    break
+
+
+
+
     
-response = requests.get(url)
-img = Image.open(BytesIO(response.content))
-img.load()
-img = img.resize((128,128), Image.ANTIALIAS)
-img_array = np.asarray(img)
-img_array = img_array.flatten()
-img_array = np.array([ img_array ])
-img_array = img_array.astype(np.float32)
-print(img_array.shape[1])
-print(img_array)
+# response = requests.get(url)
+# img = Image.open(BytesIO(response.content))
+# img.load()
+# img = img.resize((128,128), Image.ANTIALIAS)
+# img_array = np.asarray(img)
+# img_array = img_array.flatten()
+# img_array = np.array([ img_array ])
+# img_array = img_array.astype(np.float32)
+# print(img_array.shape[1])
+# print(img_array)
 
-model = Sequential()
-model.add(Dense(10, input_dim=img_array.shape[1], activation='relu'))
-model.add(Dense(img_array.shape[1])) # Multiple output neurons
-model.compile(loss='mean_squared_error', optimizer='adam')
-model.fit(img_array,img_array,verbose=0,epochs=20)
+# model = Sequential()
+# model.add(Dense(10, input_dim=img_array.shape[1], activation='relu'))
+# model.add(Dense(img_array.shape[1])) # Multiple output neurons
+# model.compile(loss='mean_squared_error', optimizer='adam')
+# model.fit(img_array,img_array,verbose=0,epochs=20)
 
-print("Neural network output")
-pred = model.predict(img_array)
-print(pred)
-print(img_array)
-cols,rows = img.size
-img_array2 = pred[0].reshape(rows,cols,3)
-img_array2 = img_array2.astype(np.uint8)
-img2 = Image.fromarray(img_array2, 'RGB')
-img2.show()
+# print("Neural network output")
+# pred = model.predict(img_array)
+# print(pred)
+# print(img_array)
+# cols,rows = img.size
+# img_array2 = pred[0].reshape(rows,cols,3)
+# img_array2 = img_array2.astype(np.uint8)
+# img2 = Image.fromarray(img_array2, 'RGB')
+# img2.show()
