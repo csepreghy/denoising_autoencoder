@@ -11,23 +11,38 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 
+def save_resized_images():
+    datapath = os.path.join(os.getcwd(), 'cats')
+    save_path = os.path.join(os.getcwd(), 'cats_resized')
+    img_size = 150
 
-datapath = os.path.join(os.getcwd(), 'cats')
+    for img_path in os.listdir(datapath):
+        img = cv2.imread(os.path.join(datapath, img_path))
+        
+        if img.shape[0] > img.shape[1]: # if vertical, cut from top and bottom
+            pixels_to_cut = int(img.shape[0] * 0.05)
+            cropped = img[pixels_to_cut: -pixels_to_cut, 0:-1]
+        
+        elif img.shape[0] < img.shape[1]: # if horizontal, cut from left and right
+            pixels_to_cut = int(img.shape[1] * 0.05)
+            cropped = img[0:-1, pixels_to_cut: -pixels_to_cut]
+        
+        img_resized = cv2.resize(cropped, (img_size, img_size))
+        cv2.imwrite(os.path.join(save_path, img_path), img_resized)
 
-for img in os.listdir(datapath):
-    print(f'img = {img}')
+def get_images():
+    datapath = os.path.join(os.getcwd(), 'cats_resized')
+    images = []
+    for img_path in os.listdir(datapath):
+        img = cv2.imread(os.path.join(datapath, img_path))
+        images.append(img)
 
-    img_array = cv2.imread(os.path.join(datapath, img))
-    print(f'img_array = {img_array}')
-    cv2.imshow('cat', img_array) 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    break
+    return images
 
+images = get_images()
 
+print(f'images = {images}')
 
-
-    
 # response = requests.get(url)
 # img = Image.open(BytesIO(response.content))
 # img.load()
