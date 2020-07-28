@@ -4,12 +4,15 @@ from io import BytesIO
 import numpy as np
 import pandas as pd
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Activation
+from tensorflow.keras.layers import Input, Dense, Activation, Conv2D, MaxPooling2D, UpSampling2D, Reshape, Flatten
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.datasets import mnist
 
 import os
 import cv2
 import matplotlib.pyplot as plt
+
+(trainX, trainy), (testX, testy) = mnist.load_data()
 
 def save_resized_images():
     datapath = os.path.join(os.getcwd(), 'cats')
@@ -37,35 +40,49 @@ def get_images():
         img = cv2.imread(os.path.join(datapath, img_path))
         images.append(img)
 
-    return images
+    return np.array(images)
 
-images = get_images()
+X = get_images()
 
-print(f'images = {images}')
+# ======================================================================== #
+# ================================ DECODER =============================== #
+# ======================================================================== #
 
-# response = requests.get(url)
-# img = Image.open(BytesIO(response.content))
-# img.load()
-# img = img.resize((128,128), Image.ANTIALIAS)
-# img_array = np.asarray(img)
-# img_array = img_array.flatten()
-# img_array = np.array([ img_array ])
-# img_array = img_array.astype(np.float32)
-# print(img_array.shape[1])
-# print(img_array)
+input_layer = Input(shape=(X.shape[1:]))
 
-# model = Sequential()
-# model.add(Dense(10, input_dim=img_array.shape[1], activation='relu'))
-# model.add(Dense(img_array.shape[1])) # Multiple output neurons
-# model.compile(loss='mean_squared_error', optimizer='adam')
-# model.fit(img_array,img_array,verbose=0,epochs=20)
+# encoder
+x = Conv2D(filters=32,
+           kernel_size=3,
+           activation='relu', 
+           padding='same')(input_layer)
 
-# print("Neural network output")
-# pred = model.predict(img_array)
-# print(pred)
-# print(img_array)
-# cols,rows = img.size
-# img_array2 = pred[0].reshape(rows,cols,3)
-# img_array2 = img_array2.astype(np.uint8)
-# img2 = Image.fromarray(img_array2, 'RGB')
-# img2.show()
+x = MaxPooling2D(3)(x)
+
+x = Conv2D(filters=16,
+            kernel_size=3,
+            activation='relu',
+            padding='same')(x)
+
+encoded = MaxPooling2D(2, padding='same')(x)
+
+# ======================================================================== #
+# ================================ DECODER =============================== #
+# ======================================================================== #
+
+x = Conv2D(filters=16,
+           kernel_size=3,
+           activation='relu',
+           padding='same')(encoded)
+        
+x = UpSampling2D(2)(x)
+
+x = Conv2D(filters=32,
+            kernel_size=3,
+            activation='relu',
+            padding='same')(x)
+
+x = UpSampling2D(2)(x)
+
+decoded = Conv2D(1, 1, activation='tanh', padding='same')(x)
+
+autoencoder = Model(input_layer, decoded)
