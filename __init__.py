@@ -3,7 +3,7 @@ import requests
 from io import BytesIO
 import numpy as np
 import pandas as pd
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Input, Dense, Activation, Conv2D, MaxPooling2D, UpSampling2D, Reshape, Flatten
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.datasets import mnist
@@ -81,8 +81,16 @@ x = Conv2D(filters=32,
             activation='relu',
             padding='same')(x)
 
-x = UpSampling2D(2)(x)
+x = UpSampling2D(3)(x)
 
 decoded = Conv2D(1, 1, activation='tanh', padding='same')(x)
 
 autoencoder = Model(input_layer, decoded)
+autoencoder.summary()
+autoencoder.compile(loss='mse', optimizer='adam')
+
+history = autoencoder.fit(x=X,
+                          y=X,
+                          epochs=10,
+                          batch_size=32,
+                          validation_data=(X, X))
